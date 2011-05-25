@@ -1,0 +1,5 @@
+#!/bin/sh
+spec sign_in_and_sign_up.rb
+spec create_auction.rb
+ruby delete_auction.rb
+ruby submit_bids.rb
