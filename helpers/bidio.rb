@@ -272,18 +272,45 @@ module Dashborad
 	click(browser,"auction_submit")
 	# click_link(browser,"Continue") if browser.element?("link=Continue")
   end 
+
+  
+
+  def create_clock_auction_step_2(browser, radio_button, start_price = "", start_time = "", qty = "", amount = "", select_interver = "", fill_interval = "", slope_kind = "")
+	clock_radio = "auction_type_ClockAuction"
+	eproxy_radio = "auction_type_EproxAuction"  
+	    
+	auciton_type = radio_button.gsub(/ Auction/,"").downcase
+	time_field = "#{auciton_type}_auction_clock_start_time_date"              
+	start_price_field = "#{auciton_type}_auction_start_price_holder" 
 	
-	#   def create_auction_step_2(browser, start_price = "", start_time = "", qty = "")
-	# time_field = "clock_auction_clock_start_time_date"              
-	#     start_price_field = "clock_auction_start_price_holder" 
-	# 
-	#    	browser.type "clock_auction_supply", qty if qty != ""       	
+	if radio_button =~ /Clock/ 
+	       	
+	else
+	  browser.check eprox_radio  
+
+	end
+	
 	# browser.type start_price_field, start_price if start_price != ""
-	#     browser.type time_field, start_time if start_time != ""    
-	# 
-	#     click(browser,"auction_submit")
-	#     click_link(browser,"Continue") if browser.element?("link=Continue")
-	#   end
+	# browser.type time_field, start_time if start_time != ""  
+	
+	element = {
+	  "clock_auction_slope_amount_holder" => amount,
+      "clock_auction_slope_interval" => fill_interval,
+      "slope_type" => slope_kind,
+      "clock_auction_supply" => qty,
+      start_price_field => start_price,
+	  time_field => start_time
+    }    
+    
+    slope.each { |k, v|
+	  browser.type k, v if v!= ""
+    }
+    browser.select "slope_interval_selector", select_interval if select_interval != ""  
+	
+	  click(browser,"auction_submit")
+  end
+	
+
 
 
   def edit_clock_auction(browser, title = "", start_time = "", start_price = "", qty = "")
@@ -304,10 +331,29 @@ module Dashborad
 
 
 
-  def edit_slope(browser, amount = "", select_interver = "", fill_interval = "")
-    browser.type "clock_auction_slope_amount_holder", amount if amount != ""
+  def edit_slope(browser, amount = "", select_interver = "", fill_interval = "", slope_kind = "")
+    click(browser,"//input[@value='Edit']")
+     
+    slope = {
+	  "clock_auction_slope_amount_holder" => amount,
+      "clock_auction_slope_interval" => fill_interval,
+      "slope_type" => slope_kind
+    }    
+    
+    slope.each { |k, v|
+	  browser.type k, v if v!= ""
+    }
     browser.select "slope_interval_selector", select_interval if select_interval != ""
-
+    
+    click(browser,"listing_submit")
+  end
+  
+  
+  def get_price(browser)
+    price = browser.get_table("//tbody.0.1").delete("$")
+    price.delete(",") if price =~/,/
+    price = price.to_i  
+    return price
   end
 
 end

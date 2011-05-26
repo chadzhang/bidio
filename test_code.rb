@@ -42,30 +42,17 @@ describe "test" do
     
     $local_server = 'http://localhost:3000'
     
+    $real_server = "http://vip.bid.io"
+    $local = "http://localhost:3000"
+
+    $target_server = $local #$real_server
+    
 
     describe "Assumptions" do
       
-      it "" do          
+      it "" do 
+       
 
-
-
-	  page.open $local_server
-	  bidio.access_private_alpha(page) if page.element?("link=access the private alpha")
-	  bidio.click_link(page,"Sign In")
-	  bidio.sign_in(page, "b@bidiodev.com", "a")
-	  bidio.goto_browse_auctions(page)
-	  bidio.click_contain_text(page,"Mac Mini")
-	
-	
-	  for auction in $auctions
-	  bidio.create_auction_step_1(@@page, auction, "")
-	  if auction =~ /11/
-	    bidio.create_auction_step_2(@@page, "Clock Auction", $auction_start_price_1, start_time = "", $auction_qty_1)
-	  elsif auction =~ /17/
-	    bidio.create_auction_step_2(@@page, "Clock Auction", $auction_start_price_2, start_time = "", $auction_qty_2)
-	  else
-	    bidio.create_auction_step_2(@@page, "Clock Auction", $auction_start_price_3, start_time = "", $auction_qty_3)
-	  end
 	
 	
 	
