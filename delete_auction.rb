@@ -23,9 +23,10 @@ class Submit_bids < Test::Unit::TestCase
 	  # @selenium.close_current_browser_session
 	end
       
-      $real_server = "http://vip.bid.io"
-      $local = "http://localhost:3000"
-      $target_server = $real_server #$local
+    $real_server = "http://vip.bid.io"
+    $local = "http://localhost:3000"
+    # $target_server = $real_server 
+    $target_server = $local
 
 	  $admin_mail = "c@bidiodev.com"
 	  $admin_pw = "a"
@@ -98,11 +99,11 @@ class Submit_bids < Test::Unit::TestCase
 	    bidio.create_auction_step_1(@@selenium, $auction_title, "")
 	    bidio.create_auction_step_2(@@selenium, "Clock Auction")
 	    bidio.click(@@selenium,"//input[@value='Publish']")
-	assert !@@selenium.text?("UNPUBLISHED")
-	assert @@selenium.text?("Note that as a seller, you are not allowed to bid.")
-	assert @@selenium.element?("link=start auction now!") if @@selenium.get_location() =~ /localhost/
-	assert @@selenium.element?($detail_link)
-	assert_equal(@@selenium.get_text("css=#auction_status h3"), "PUBLIC\nnot yet started")
+    	assert !@@selenium.text?("UNPUBLISHED")
+    	assert @@selenium.text?("Note that as a seller, you are not allowed to bid.")
+      # assert @@selenium.element?("link=start auction now!") if @@selenium.get_location() =~ /localhost/   # This link only available in development mode
+    	assert @@selenium.element?($detail_link)
+    	assert_equal(@@selenium.get_text("css=#auction_status h3"), "PUBLIC\nnot yet started")
 	    
 	    bidio.click(@@selenium, $detail_link)
 	    assert @@selenium.element?($delete_link)
@@ -136,53 +137,53 @@ class Submit_bids < Test::Unit::TestCase
 	    # @@selenium.open "#{$target_server}/sign_in"
 	    bidio.sign_out(@@selenium) if @@selenium.element?("link=Sign Out")
 	    if @@selenium.get_location() =~ /localhost/
-	    bidio.sign_in(@@selenium,"#{$admin_mail}","#{$admin_pw}")
-	    bidio.create_auction_step_1(@@selenium, $auction_title, "")
-	    bidio.create_auction_step_2(@@selenium, "Clock Auction")
-	    bidio.click(@@selenium,"//input[@value='Publish']")
-		bidio.click(@@selenium, "link=start auction now!")
+  	    bidio.sign_in(@@selenium,"#{$admin_mail}","#{$admin_pw}")
+  	    bidio.create_auction_step_1(@@selenium, $auction_title, "")
+  	    bidio.create_auction_step_2(@@selenium, "Clock Auction")
+  	    bidio.click(@@selenium,"//input[@value='Publish']")
+  		  bidio.click(@@selenium, "link=start auction now!")
 	
-	    assert_equal(@@selenium.get_text("css=#auction_status h3"), "OVER")
-	    assert @@selenium.text?("There was no winner.")
-	    # assert @@selenium.text?("This Auction is OVER.") # This text is for the bidders, not for creater.
-	    assert @@selenium.element?($detail_link)
+  	    assert_equal(@@selenium.get_text("css=#auction_status h3"), "OVER")
+  	    assert @@selenium.text?("There was no winner.")
+  	    # assert @@selenium.text?("This Auction is OVER.") # This text is for the bidders, not for creater.
+  	    assert @@selenium.element?($detail_link)
 	
-	    bidio.goto_dashboard(@@selenium)
-	    assert @@selenium.text?("13-inch: 2.7 GHz MacB")
-	    assert @@selenium.element?($auction_link)
-	    bidio.goto_browse_auctions(@@selenium)
-	    assert @@selenium.text?("13-inch: 2.7 GHz MacB")
-	    assert @@selenium.element?($auction_link)
+  	    bidio.goto_dashboard(@@selenium)
+  	    assert @@selenium.text?("13-inch: 2.7 GHz MacB")
+  	    assert @@selenium.element?($auction_link)
+  	    bidio.goto_browse_auctions(@@selenium)
+  	    assert @@selenium.text?("13-inch: 2.7 GHz MacB")
+  	    assert @@selenium.element?($auction_link)
 	
-	    bidio.click(@@selenium, $auction_link)
-	    bidio.click(@@selenium, $detail_link)
-	    assert @@selenium.element?($delete_link)
-	    assert @@selenium.element?("link=Audit")
+  	    bidio.click(@@selenium, $auction_link)
+  	    bidio.click(@@selenium, $detail_link)
+  	    assert @@selenium.element?($delete_link)
+  	    assert @@selenium.element?("link=Audit")
 	
-	    bidio.click(@@selenium, $delete_link)
-	    pop_text = @@selenium.get_confirmation()
-	    assert_equal(pop_text, "Are you sure you wish to delete #{$auction_title}?")
+  	    bidio.click(@@selenium, $delete_link)
+  	    pop_text = @@selenium.get_confirmation()
+  	    assert_equal(pop_text, "Are you sure you wish to delete #{$auction_title}?")
 	
-	    bidio.goto_dashboard(@@selenium)
-	    assert !@@selenium.text?("13-inch: 2.7 GHz MacB")
-	    assert !@@selenium.element?($auction_link)
-	    bidio.goto_browse_auctions(@@selenium)
-	    assert !@@selenium.text?("13-inch: 2.7 GHz MacB")
-	    assert !@@selenium.element?($auction_link)
+  	    bidio.goto_dashboard(@@selenium)
+  	    assert !@@selenium.text?("13-inch: 2.7 GHz MacB")
+  	    assert !@@selenium.element?($auction_link)
+  	    bidio.goto_browse_auctions(@@selenium)
+  	    assert !@@selenium.text?("13-inch: 2.7 GHz MacB")
+  	    assert !@@selenium.element?($auction_link)
 	
-	    bidio.sign_out(@@selenium)
+  	    bidio.sign_out(@@selenium)
 	
-	    [$user1_mail, $seller1_mail, $admin2_mail].each { |user|
-		  bidio.sign_in(@@selenium,"#{user}","a")
-		  bidio.goto_dashboard(@@selenium)
-		  assert !@@selenium.text?("13-inch: 2.7 GHz MacB")
-		  assert !@@selenium.element?($auction_link)
-		  bidio.goto_browse_auctions(@@selenium)
-		  assert !@@selenium.text?("13-inch: 2.7 GHz MacB")
-		  assert !@@selenium.element?($auction_link)
-		  bidio.sign_out(@@selenium)
-	    }
-	end
+  	    [$user1_mail, $seller1_mail, $admin2_mail].each { |user|
+  		  bidio.sign_in(@@selenium,"#{user}","a")
+  		  bidio.goto_dashboard(@@selenium)
+  		  assert !@@selenium.text?("13-inch: 2.7 GHz MacB")
+  		  assert !@@selenium.element?($auction_link)
+  		  bidio.goto_browse_auctions(@@selenium)
+  		  assert !@@selenium.text?("13-inch: 2.7 GHz MacB")
+  		  assert !@@selenium.element?($auction_link)
+  		  bidio.sign_out(@@selenium)
+  	    }
+	    end
 	  end
   
 end

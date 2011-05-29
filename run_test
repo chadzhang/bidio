@@ -2,4 +2,6 @@
 spec sign_in_and_sign_up.rb
 spec create_auction.rb
 ruby delete_auction.rb
+ruby check_slider.rb
+ruby discrete_slope.rb
 ruby submit_bids.rb

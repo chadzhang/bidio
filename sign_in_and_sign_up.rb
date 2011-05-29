@@ -34,7 +34,8 @@ describe "test" do
     $local_homepage = "http://localhost:3000/home"
    
     $local = "http://localhost:3000"
-    $target_server = $real_server
+    $target_server = $local 
+    # $target_server = $real_server 
     $target_homepage = "#{$target_server}/home"
 
     page.open $target_server

@@ -11,7 +11,7 @@ require "selenium/client"
 @@page = Selenium::Client::Driver.new \
   :host => "localhost",
   :port => 4444,
-  :browser => "*chrome",
+  :browser => "*firefox",
   :url => "http://localhost:3000/",
   :timeout_in_second => 60
 @@page.start_new_browser_session
@@ -24,124 +24,119 @@ class Submit_bids < Test::Unit::TestCase
   
   $real_server = "http://vip.bid.io"
   $local = "http://localhost:3000"
-  $target_server = $local #$real_server
+  # $target_server = $real_server
+  $target_server = $local
 
   $auction_1 = "27-inch iMac"
   $auction_2 = "Apple Displays"
   $auctions = [$auction_1, $auction_2]
 
-  $admin2 = "b@bidiodev.com"
+  $admin = "c@bidiodev.com"
   $user1 = "z@bidiodev.com"
   $seller1 = "k@bidiodev.com"
   $test_pw = "a"
 
-  $users = [$admin2, $user1, $seller1]
+  $users = [$admin, $user1, $seller1]
 
   $slope_amount = "clock_auction_slope_amount_holder"
   $slope_interval = "slope_interval_selector"
   $slope_interval_field = "slope_interval_field"
   $slope_type = "slope_type"
 
-  def test_a_setting_slope
+  def test_a_before_auction_start_and_live_auction
   	bidio = Bidio.new
-	     
+  	auctions = ["iPad", "Cartier Watch"]
+  	button_Im_in = "//input[@class='iamin_button']"
+  	
   	@@page.open "#{$target_server}/sign_in"
-  	bidio.sign_in(@@page,"#{$admin2}","#{$test_pw}")
-    bidio.create_auction_step_1(@@page, "Mac mini 2.66GHz 500GB", "")
-    slope_element = [$slope_amount, $slope_interval, $slope_interval_field, $slope_type]
-    slope_element.each { |element|
-      if element == $slope_interval_field
-      assert !@@page.visible?(element)
-      else
-      assert @@page.element?(element)
-      end
-    }
-      
-    assert_equal(@@page.get_attribute("//select[@id='slope_type']/option[2]@selected"), "selected")
-    
-    @@page.select $slope_interval, "Other..."
-    sleep 1
-    assert @@page.element?($slope_interval_field)
-    assert !@@page.visible?($slope_interval)
-      
-    # type some invalid in the slope interval field. should not able to save!
-      
-    @@page.type $slope_interval_field, 1
-    @@page.type $slope_amount, 10
-    bidio.click(@@page,"auction_submit")
-      
-    assert_equal(@@page.get_table("//tbody.0.2"), "$10 per 1 min")
-    assert_equal(@@page.get_table("//tbody.1.2"), "Increase Rate")
-  
-  end
+  	
+  	for auction in auctions
+  	  for user in $users
+  	    puts "\nRight now testing #{user.inspect} in #{auction.inspect} Auction.\n"
+  	    
+        bidio.sign_in(@@page, user, "a")
 
-
-  def test_b_setting_match_displays
-    bidio = Bidio.new
-    slope_amount = "auction_slope_amount_holder"
-    slope_field = "auction_slope_interval"
-    
-    5.times {
-      bidio.click(@@page,"//input[@value='Edit']")  
-      interval = rand(20)+1
-      amount = rand(100)+1
-      puts "\ninterval is:#{interval}, amount is:#{amount}\n"
-      @@page.select $slope_interval, "Other..."
-      sleep 1
-      @@page.type slope_field, interval
-      @@page.type slope_amount, amount
-      sleep 3
-      bidio.click(@@page,"listing_submit")
-      if interval == 1
-        assert_equal(@@page.get_table("//tbody.0.2"), "$#{amount} per #{interval} min")
-      else
-        assert_equal(@@page.get_table("//tbody.0.2"), "$#{amount} per #{interval} mins") # bug3494
-      end
-      assert_equal(@@page.get_table("//tbody.1.2"), "Increase Rate")
-    }
-    
-    bidio.sign_out(@@page)
-  end
-  
-  
-  
-  def test_c_check_slope_increment_in_live_auction
-    bidio = Bidio.new
-    
-    bidio.sign_out(@@page) if @@page.element?("link=Sign Out")
-    
-    for user in $users
-      bidio.sign_in(@@page, user, "a")
-      
-      for auction in $auctions
         bidio.goto_browse_auctions(@@page)
         bidio.click_link(@@page, auction)
+        if @@page.element?(button_Im_in)
+          @@page.click button_Im_in
+          bidio.wait_for_text(@@page,"Your Drop Out Price")
+          sleep 1
+        end
+
+        max_place = bidio.get_max_slider(@@page)
+
+        min_price = bidio.get_min_price(@@page)
+        bidio.placed_bid(@@page, min_price)
+        current_place = bidio.get_slider_place(@@page)
+        assert_equal(current_place, 0)
+
+        max_price = bidio.get_max_price(@@page)
+        new_max_price = max_price+rand(2*max_price-max_price)
+        bidio.placed_bid(@@page, new_max_price)
+        current_place = bidio.get_slider_place(@@page)
+        assert_equal(current_place, max_place)
+
         5.times {
-          @@page.get_table("//tbody.0.2") =~ /\$(.*) per (.*) min/
-          slope_inc = $1.to_i
-          slope_interval = $2.to_i
-          previous_price = bidio.get_price(@@page)
-          expected_inc = previous_price + slope_inc
-          time = 60*slope_interval
-          puts "\nslope_inc is : #{slope_inc}, slope_interval is : #{slope_interval}, previous_price is : #{previous_price}, expected_inc is:#{expected_inc}, time is: #{time}\n"
-          sleep time
-          current_price = bidio.get_price(@@page)
-          puts "current_price is : #{current_price}"
-          assert_equal(current_price, expected_inc)    
+          min_price = bidio.get_min_price(@@page)
+          bid = min_price+rand(max_price-min_price)
+          bidio.placed_bid(@@page, bid)
+          current_place = bidio.get_slider_place(@@page)
+          expected_place = bidio.cal_slider_place(min_price, max_price, bid, max_place)
+
+          assert_equal(current_place, expected_place)
         }
+
+        puts "DONE,Test for user #{user.inspect} in #{auction.inspect} Auction is finished!\n"
+
+        bidio.sign_out(@@page)
       end
-      
-      bidio.sign_out(@@page)
-    end
+  	end
+    puts "\nAll the test for Slider pass!\n"
   end
 
 
-
-
+  # def test_b_in_live_auction
+  #   bidio = Bidio.new
+  #   
+  #   for user in $users
+  #     bidio.sign_in(@@page, user, "a")
+  #     
+  #     bidio.goto_browse_auctions(@@page)
+  #     bidio.click_link(@@page, auction)
+  #     
+  #     max_place = bidio.get_max_slider(@@page)
+  #     
+  #     min_price = bidio.get_min_price(@@page)
+  #     bidio.placed_bid(@@page, min_price)
+  #     current_place = bidio.get_slider_place(@@page)
+  #     assert_equal(current_place, 0)
+  #     
+  #     max_price = bidio.get_max_price(@@page)
+  #     new_max_price = max_price+rand(2*max_price-max_price)
+  #     bidio.placed_bid(@@page, new_max_price)
+  #     current_place = bidio.get_slider_place(@@page)
+  #     assert_equal(current_place, max_place)
+  #     
+  #     5.times {
+  #       min_price = bidio.get_min_price(@@page)
+  #       bid = min_price+rand(max_price-min_price)
+  #       bidio.placed_bid(@@page, bid)
+  #       current_place = bidio.get_slider_place(@@page)
+  #       expected_place = bidio.cal_slider_place(min_price, max_price, bid, max_place)
+  #       
+  #       assert_equal(current_place, expected_place)
+  #     }
+  #     
+  #     puts "\nTest for #{user.inspect} is finish!\n"
+  #     
+  #     bidio.sign_out(@@page)
+  #   end
+  # end
   
-  def test_d_auction_start_and_submit_bids
-    bidio = Bidio.new
-
-  end
+  # def test_d_auction_start_and_submit_bids
+  #   bidio = Bidio.new
+  # 
+  # end
 
 end

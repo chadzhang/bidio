@@ -207,8 +207,21 @@ module Browser_auctions
   def placed_bid(browser,bid)
     browser.type "bid_price", bid
     browser.click "place_bid_btn"
+    # browser.key_press "bid_price", "\\13"
     bid = ts(bid.to_s)
     wait_for_text(browser,"$#{bid}")
+    # wait_for_text(browser,"Bid submitted successfully!")
+    text = "Bid submitted successfully!"
+    n = 0
+    until browser.text?(text) do
+      sleep 1
+      n = n + 1
+      if n == 10
+        puts "<<<<<<<<<<< Need to click the Button for second times! >>>>>>>>>>>>>"
+        browser.click "place_bid_btn" 
+      end
+      break if browser.text?("text")
+    end
     sleep rand
   end
 
@@ -219,6 +232,40 @@ module Browser_auctions
     sleep rand
   end
 
+   
+   def get_min_price(browser)
+     min_price = browser.get_text("css=div.min_price").delete("$").to_i
+     return min_price
+   end
+
+   def get_max_price(browser)
+     max_price = browser.get_text("max_price").delete("$").to_i
+     return max_price
+   end
+
+   def get_max_slider(browser)
+     max_price = get_max_price(browser)
+     placed_bid(browser, max_price)
+     browser.get_attribute("//div[@id='bid_price_slider']/div@style").match(/left: (.*)px;/)
+     max_place = $1.to_i
+     puts "max_place is :#{max_place}"
+     return max_place
+   end
+   
+   
+   def get_slider_place(browser)
+     browser.get_attribute("//div[@id='bid_price_slider']/div@style").match(/left: (.*)px;/)
+     place = $1.to_i
+     puts "place is :#{place}"
+     return place
+   end
+   
+   def cal_slider_place(min, max, bid, max_place)
+     current = max_place*(bid-min)/(max.to_f-min.to_f)
+     puts "current is : #{current}"
+     return current.round
+   end
+   
 
 
 end
@@ -351,10 +398,18 @@ module Dashborad
   
   def get_price(browser)
     price = browser.get_table("//tbody.0.1").delete("$")
-    price.delete(",") if price =~/,/
+    price = price.delete(",") if price =~/,/
     price = price.to_i  
     return price
   end
+  
+  def get_current_price(browser)
+    current_price = browser.get_table("//tbody.0.1").delete("$")
+    current_price = current_price.delete(",") if current_price =~ /,/
+    current_price = current_price.to_i  
+    return current_price
+  end
+  
 
 end
 

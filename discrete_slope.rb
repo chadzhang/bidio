@@ -24,13 +24,14 @@ class Submit_bids < Test::Unit::TestCase
   
   $real_server = "http://vip.bid.io"
   $local = "http://localhost:3000"
-  $target_server = $local #$real_server
+  # $target_server = $real_server
+  $target_server = $local 
 
   $auction_1 = "27-inch iMac"
   $auction_2 = "Apple Displays"
   $auctions = [$auction_1, $auction_2]
 
-  $admin2 = "b@bidiodev.com"
+  $admin2 = "a@bidiodev.com"
   $user1 = "z@bidiodev.com"
   $seller1 = "k@bidiodev.com"
   $test_pw = "a"
@@ -79,7 +80,7 @@ class Submit_bids < Test::Unit::TestCase
   def test_b_setting_match_displays
     bidio = Bidio.new
     slope_amount = "auction_slope_amount_holder"
-    slope_field = "auction_slope_interval"
+    slope_field = "auction_slope_interval_holder"
     
     5.times {
       bidio.click(@@page,"//input[@value='Edit']")  
@@ -90,7 +91,7 @@ class Submit_bids < Test::Unit::TestCase
       sleep 1
       @@page.type slope_field, interval
       @@page.type slope_amount, amount
-      sleep 3
+      sleep 1
       bidio.click(@@page,"listing_submit")
       if interval == 1
         assert_equal(@@page.get_table("//tbody.0.2"), "$#{amount} per #{interval} min")
@@ -116,7 +117,7 @@ class Submit_bids < Test::Unit::TestCase
       for auction in $auctions
         bidio.goto_browse_auctions(@@page)
         bidio.click_link(@@page, auction)
-        5.times {
+        2.times {
           @@page.get_table("//tbody.0.2") =~ /\$(.*) per (.*) min/
           slope_inc = $1.to_i
           slope_interval = $2.to_i
