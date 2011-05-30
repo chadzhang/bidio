@@ -24,8 +24,8 @@ class Submit_bids < Test::Unit::TestCase
   
   $real_server = "http://vip.bid.io"
   $local = "http://localhost:3000"
-  # $target_server = $real_server
-  $target_server = $local 
+  $target_server = $real_server
+  # $target_server = $local 
 
   $auction_1 = "27-inch iMac"
   $auction_2 = "Apple Displays"
@@ -45,7 +45,8 @@ class Submit_bids < Test::Unit::TestCase
 
   def test_a_setting_slope
   	bidio = Bidio.new
-	     
+	  
+	  @@page.open $target_server
   	@@page.open "#{$target_server}/sign_in"
   	bidio.sign_in(@@page,"#{$admin2}","#{$test_pw}")
     bidio.create_auction_step_1(@@page, "Mac mini 2.66GHz 500GB", "")
@@ -71,8 +72,10 @@ class Submit_bids < Test::Unit::TestCase
     @@page.type $slope_amount, 10
     bidio.click(@@page,"auction_submit")
       
-    assert_equal(@@page.get_table("//tbody.0.2"), "$10 per 1 min")
-    assert_equal(@@page.get_table("//tbody.1.2"), "Increase Rate")
+    # assert_equal(@@page.get_table("//tbody.0.2"), "$10 per 1 min")
+    # assert_equal(@@page.get_table("//tbody.1.2"), "Increase Rate")
+    assert_equal(@@page.get_table("//tfoot.0.2"), "$10 per 1 min")
+    assert_equal(@@page.get_table("//thead.0.2"), "Increase Rate")
   
   end
 
@@ -82,7 +85,7 @@ class Submit_bids < Test::Unit::TestCase
     slope_amount = "auction_slope_amount_holder"
     slope_field = "auction_slope_interval_holder"
     
-    5.times {
+    3.times {
       bidio.click(@@page,"//input[@value='Edit']")  
       interval = rand(20)+1
       amount = rand(100)+1
@@ -94,11 +97,14 @@ class Submit_bids < Test::Unit::TestCase
       sleep 1
       bidio.click(@@page,"listing_submit")
       if interval == 1
-        assert_equal(@@page.get_table("//tbody.0.2"), "$#{amount} per #{interval} min")
+        # assert_equal(@@page.get_table("//tbody.0.2"), "$#{amount} per #{interval} min")
+        assert_equal(@@page.get_table("//tfoot.0.2"), "$#{amount} per #{interval} min")
       else
-        assert_equal(@@page.get_table("//tbody.0.2"), "$#{amount} per #{interval} mins") # bug3494
+        # assert_equal(@@page.get_table("//tbody.0.2"), "$#{amount} per #{interval} mins")
+        assert_equal(@@page.get_table("//tfoot.0.2"), "$#{amount} per #{interval} mins") 
       end
-      assert_equal(@@page.get_table("//tbody.1.2"), "Increase Rate")
+        # assert_equal(@@page.get_table("//tbody.1.2"), "Increase Rate")
+        assert_equal(@@page.get_table("//thead.0.2"), "Increase Rate")
     }
     
     bidio.sign_out(@@page)
@@ -117,8 +123,9 @@ class Submit_bids < Test::Unit::TestCase
       for auction in $auctions
         bidio.goto_browse_auctions(@@page)
         bidio.click_link(@@page, auction)
-        2.times {
-          @@page.get_table("//tbody.0.2") =~ /\$(.*) per (.*) min/
+        1.times {
+          # @@page.get_table("//tbody.0.2") =~ /\$(.*) per (.*) min/
+          @@page.get_table("//tfoot.0.2") =~ /\$(.*) per (.*) min/
           slope_inc = $1.to_i
           slope_interval = $2.to_i
           previous_price = bidio.get_price(@@page)

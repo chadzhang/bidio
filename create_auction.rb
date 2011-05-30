@@ -55,7 +55,7 @@ describe "test" do
 	    $local_homepage = "http://localhost:3000/home"	
 	
       # $target_server = $real_server 
-	    $target_server = $local 
+      $target_server = $local 
 	  end
 	
 	  it "User's info" do
@@ -86,8 +86,8 @@ describe "test" do
 	 describe "Login the System." do
 	  it "Should in Bid.io homepage after accessing the popup." do
 	    page.open $target_server
-	    $sell_item = "//input[@value='Sell Item']"
-	    bidio.access_private_alpha(page) if page.element?("link=access the private alpha")
+      $sell_item = "//input[@value='Sell Item']"
+      # bidio.access_private_alpha(page) if page.element?("link=access the private alpha")
 	  end 
 	 end
 	
@@ -99,6 +99,7 @@ describe "test" do
     describe "You cannot create the Auction in following conditions: (1) you are not sign in; (2) you are noot seller." do
 	
 	  it "Not sign in yet." do
+	  page.open "#{$target_server}/sign_in"
 		bidio.click_link(page,"Create An Auction")
 		
 		text = [
@@ -231,9 +232,13 @@ describe "test" do
 	describe "Check the page after the new auction is saved." do
 	
 	  it "Check the text." do
-		text = ["UNPUBLISHED", "Before your auction is made public, you can edit it. You will not be able to edit after it is published",
-		        "Make your auction public so anyone can view, and make bids", "If you no longer wish to sell this item, you may delete this auction.",
-		        "27 inch Apple Cinema displays"]
+		text = [
+		  "UNPUBLISHED", 
+		  "Before your auction is made public, you can edit it. You will not be able to edit after it is published",
+		  "Make your auction public so anyone can view, and make bids", 
+		  "If you no longer wish to sell this item, you may delete this auction.",
+		  "27 inch Apple Cinema displays"
+		]
 		text.each { |text| page.text?(text).should be_true}
 		
 		page.get_table("//tbody.0.1").should eql("$#{$clock_sp}")
@@ -267,6 +272,7 @@ describe "test" do
 	
 	  it "Other Bidder checks the Browser Auctions page and Dashboard page." do
 	    page2.open $target_server
+	    page2.open "#{$target_server}/sign_in"
 	    bidio.access_private_alpha(page2) if page2.element?("link=access the private alpha")
 	    [$user1_mail, $seller1_mail, $admin2_mail].each { |user|
 		  bidio.sign_in(page2,"#{user}","a")

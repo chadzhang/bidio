@@ -41,9 +41,9 @@ describe "test" do
     page.open $target_server
 
     it "Should in Bid.io homepage after accessing the popup.(Please check the URL and some features that belong to homepage.)" do
-      page.click "link=access the private alpha", :wait_for => :page
+      # page.click "link=access the private alpha", :wait_for => :page
       
-      home_page = page.get_location()
+      # home_page = page.get_location()
       # home_page.should eql("#{$target_homepage}")
       # page.is_text_present("Start right now!")
       # page.is_text_present("bid.io is your social commerce solution").should be_true
@@ -54,6 +54,7 @@ describe "test" do
     describe "Sign in with email adress" do
       
       it "(1) In the Sign in screen.Make sure the Sign Up link exist." do
+        page.open "#{$target_server}/sign_in"
         page.click "link=Sign In", :wait_for => :page
         
         page.is_element_present("link=Sign up here!").should be_true

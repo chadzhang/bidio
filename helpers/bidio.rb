@@ -141,7 +141,8 @@ module General
   end
 
   def generate_bid(browser)
-    start_price = browser.get_table("//tbody.0.1").delete("$")
+    # start_price = browser.get_table("//tbody.0.1").delete("$")
+    start_price = browser.get_table("//tfoot.0.1").delete("$")
     if start_price =~ /,/
 	  start_price = start_price.delete(",").to_i
 	else
@@ -177,6 +178,10 @@ module Flow_page
   def goto_my_auctions(browser)
     click_link(browser,"My Auctions")
   end
+  
+  def goto_my_account(browser)
+    click(browser,"css=.user_menu > span > a")
+  end
 
 end
 
@@ -210,18 +215,18 @@ module Browser_auctions
     # browser.key_press "bid_price", "\\13"
     bid = ts(bid.to_s)
     wait_for_text(browser,"$#{bid}")
-    # wait_for_text(browser,"Bid submitted successfully!")
-    text = "Bid submitted successfully!"
-    n = 0
-    until browser.text?(text) do
-      sleep 1
-      n = n + 1
-      if n == 10
-        puts "<<<<<<<<<<< Need to click the Button for second times! >>>>>>>>>>>>>"
-        browser.click "place_bid_btn" 
-      end
-      break if browser.text?("text")
-    end
+    wait_for_text(browser,"Bid submitted successfully!")
+    # text = "Bid submitted successfully!"
+    # n = 0
+    # until browser.text?(text) do
+    #   sleep 1
+    #   n = n + 1
+    #   if n == 10
+    #     puts "<<<<<<<<<<< Need to click the Button for second times! >>>>>>>>>>>>>"
+    #     browser.click "place_bid_btn" 
+    #   end
+    #   break if browser.text?("text")
+    # end
     sleep rand
   end
 
@@ -397,14 +402,16 @@ module Dashborad
   
   
   def get_price(browser)
-    price = browser.get_table("//tbody.0.1").delete("$")
+    # price = browser.get_table("//tbody.0.1").delete("$")
+    price = browser.get_table("//tfoot.0.1").delete("$")
     price = price.delete(",") if price =~/,/
     price = price.to_i  
     return price
   end
   
   def get_current_price(browser)
-    current_price = browser.get_table("//tbody.0.1").delete("$")
+    # current_price = browser.get_table("//tbody.0.1").delete("$")
+    current_price = browser.get_table("//tfoot.0.1").delete("$")
     current_price = current_price.delete(",") if current_price =~ /,/
     current_price = current_price.to_i  
     return current_price
@@ -443,10 +450,22 @@ module Admin
     browser.click "invitation_submit", :wait_for => :page
   end
   
+end
+
+
+
+
+module Connect_facebook
   
-  
+  def sign_in_fb(browser, email, password)
+    browser.type "email", email
+    browser.type "pass", password
+    
+    click(browser, "//input[@value='Log In']")
+  end
   
 end
+
 
 
 
@@ -461,7 +480,7 @@ class Bidio
   include Browser_auctions
   include Dashborad
   include My_auctions
-  
+  include Connect_facebook
 end
 
 

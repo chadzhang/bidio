@@ -44,7 +44,8 @@ class Submit_bids < Test::Unit::TestCase
 
   def test_a_delete_unpublished_auction
     bidio = Bidio.new
-   
+    
+    @@selenium.open $target_server
     @@selenium.open "#{$target_server}/sign_in"
     # bidio.sign_out(@@selenium) if @@selenium.element?("link=Sign Out")
     bidio.sign_in(@@selenium,"#{$admin_mail}","#{$admin_pw}")
